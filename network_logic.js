@@ -1,7 +1,7 @@
-/**
+﻿/**
  * ═══════════════════════════════════════════════════════════════
  * network_logic.js  —  Motor de Visualización D3.js
- * Mapa de Coautorías · Universidad del Rosario
+ * Mapa de Colaboración · Universidad del Rosario
  * ═══════════════════════════════════════════════════════════════
  *
  * PUNTO DE ENTRADA:

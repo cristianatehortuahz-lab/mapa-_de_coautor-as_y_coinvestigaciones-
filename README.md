@@ -1,10 +1,10 @@
-# 🌐 Mapa de Coautorías y Coinvestigaciones (VIVO)
+﻿# 🌐 Mapa de Colaboración y Coinvestigaciones (VIVO)
 
-![Mapa de Coautorías](https://img.shields.io/badge/VIVO-Compatible-brightgreen.svg)
+![Mapa de Colaboración](https://img.shields.io/badge/VIVO-Compatible-brightgreen.svg)
 ![D3.js](https://img.shields.io/badge/D3.js-v7-F9A03C.svg?logo=d3.js)
 ![SPARQL](https://img.shields.io/badge/SPARQL-Data-blue.svg)
 
-Este repositorio contiene la implementación nativa y modular del **Mapa de Coautorías e Investigaciones** para la plataforma VIVO (v1.11+). Superando los componentes legacy, esta visualización ofrece una red interactiva, responsiva y de alto rendimiento impulsada por **D3.js** y conectada mediante consultas directas al modelo ontológico RDF de VIVO.
+Este repositorio contiene la implementación nativa y modular del **Mapa de Colaboración e Investigaciones** para la plataforma VIVO (v1.11+). Superando los componentes legacy, esta visualización ofrece una red interactiva, responsiva y de alto rendimiento impulsada por **D3.js** y conectada mediante consultas directas al modelo ontológico RDF de VIVO.
 
 ---
 

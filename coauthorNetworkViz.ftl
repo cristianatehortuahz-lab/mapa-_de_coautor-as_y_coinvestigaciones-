@@ -1,4 +1,4 @@
-<!-- Cargar estilos unificados del frontend para expandir el Layout VIVO -->
+﻿<!-- Cargar estilos unificados del frontend para expandir el Layout VIVO -->
 <style>
   /* Forzar al contenedor a romper los limites de la plantilla de VIVO */
   #mapa-coautores-container {
@@ -25,7 +25,7 @@
 <div id="mapa-coautores-container">
   <iframe
     src="/mapadeCoauthor/"
-    title="Mapa de Coautorías"
+    title="Mapa de Colaboración"
     allowfullscreen
     loading="eager"
     sandbox="allow-scripts allow-same-origin allow-forms allow-popups"

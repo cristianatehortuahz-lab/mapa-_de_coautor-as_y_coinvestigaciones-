@@ -1,4 +1,4 @@
-<%@ page trimDirectiveWhitespaces="true" %>
+﻿<%@ page trimDirectiveWhitespaces="true" %>
 <%@ page contentType="application/json; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.util.*" %>
 <%@ page import="java.io.*" %>
@@ -9,11 +9,11 @@
 <%@ page import="edu.cornell.mannlib.vitro.webapp.rdfservice.RDFService" %>
 
 <%-- =====================================================================
-  coauthorNetwork.jsp - Backend del Mapa de Coautorias v4.3
+  coauthorNetwork.jsp - Backend del Mapa de Colaboración v4.3
   =====================================================================
   PROPOSITO:
     Genera el archivo baseData.json que alimenta la visualizacion D3.js
-    del Mapa de Coautorias de la Universidad del Rosario.
+    del Mapa de Colaboración de la Universidad del Rosario.
 
   ARQUITECTURA:
     1. Cache-First: Entrega el JSON existente de inmediato para evitar

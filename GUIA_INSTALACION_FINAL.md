@@ -1,6 +1,6 @@
-# Guía de Despliegue en Producción: Mapa de Coautorías Interactivo
+﻿# Guía de Despliegue en Producción: Mapa de Colaboración Interactivo
 
-Este documento detalla los pasos definitivos para instalar y configurar el Mapa de Coautorías Interactivo v4.3 (con la red dividida por Publicaciones y Proyectos) en un servidor de Producción VIVO, incluyendo la configuración de la Caché automatizada nocturna y procedimientos de recuperación ante fallos.
+Este documento detalla los pasos definitivos para instalar y configurar el Mapa de Colaboración Interactivo v4.3 (con la red dividida por Publicaciones y Proyectos) en un servidor de Producción VIVO, incluyendo la configuración de la Caché automatizada nocturna y procedimientos de recuperación ante fallos.
 
 ---
 
@@ -12,18 +12,18 @@ Antes de lidiar con archivos, debe existir el acceso en la plataforma.
 * En la barra superior roja, haz clic en **"Administrador del sitio"**.
 * En la sección **"Configuración de la plataforma"** (columna derecha), haz clic en **"Administración de la página"**.
 * Verás una tabla con columnas: **Título | URL | Plantilla personalizada | Página de menú | Controles**.
-* Busca la fila **"Mapa de Coautores"**. Si ya existe, verifica que tenga:
+* Busca la fila **"Mapa de Colaboración"**. Si ya existe, verifica que tenga:
   * **URL:** `/coauthorNetwork`
   * **Plantilla personalizada:** `coauthorNetworkViz.ftl`
 * Si NO existe, haz clic en el botón azul **"Agregar página"** (abajo de la tabla) y completa:
-  * **Título:** `Mapa de Coautorías`
+  * **Título:** `Mapa de Colaboración`
   * **URL:** `/coauthorNetwork`
   * **Plantilla:** Selecciona *"Plantilla personalizada, con todo el contenido"* y escribe `coauthorNetworkViz.ftl`.
 
 **1.2 Agregar al Menú Principal (Opción A — Menú estándar VIVO):**
-* En **"Administración de la página"**, marca el checkbox de la columna **"Página de menú"** en la fila de *Mapa de Coautores*.
+* En **"Administración de la página"**, marca el checkbox de la columna **"Página de menú"** en la fila de *Mapa de Colaboración*.
 * Regresa a **"Administrador del sitio"** > **"Orden del Menú"**.
-* Verifica que el ítem "Mapa de Coautores" aparezca en la lista (junto a Inicio, Comunidad UR, Áreas UR, Laboratorios).
+* Verifica que el ítem "Mapa de Colaboración" aparezca en la lista (junto a Inicio, Comunidad UR, Áreas UR, Laboratorios).
 * Usa **drag & drop** para posicionarlo donde desees. VIVO pedirá que actualices la página después de reordenar.
 
 **1.3 Agregar al dropdown "Mapas" (Opción B — Menú personalizado del tema):**
@@ -32,7 +32,7 @@ Antes de lidiar con archivos, debe existir el acceso en la plataforma.
   * Busca el bloque `<li>` que contiene "Mapas".
   * Agrega dentro del dropdown:
     ```html
-    <a class="dropdown-item" href="${urls.base}/coauthorNetwork">Mapa de Coautorías</a>
+    <a class="dropdown-item" href="${urls.base}/coauthorNetwork">Mapa de Colaboración</a>
     ```
 
 ---
@@ -191,7 +191,7 @@ tail -f /opt/tomcat/logs/catalina.out
 | **FTL Wrapper** | `/opt/tomcat/webapps/HUBvivo115/templates/freemarker/body/coauthorNetworkViz.ftl` |
 | **Log Tomcat** | `/opt/tomcat/logs/catalina.out` |
 | **Log VIVO** | `/opt/tomcat/logs/HUBvivo115.all.log` |
-| **Repositorio** | [GitHub - Mapa de Coautorías](https://github.com/cristianatehortuahz-lab/mapa-_de_coautor-as_y_coinvestigaciones-.git) |
+| **Repositorio** | [GitHub - Mapa de Colaboración](https://github.com/cristianatehortuahz-lab/mapa-_de_coautor-as_y_coinvestigaciones-.git) |
 
 ### FIN. Validación Visual
 Refresca VIVO en `https://[TuSitio]/coauthorNetwork` -> Verás los botones "Proyectos" y "Publicaciones" y el mapa expandiéndose por completo con base en el JSON recién generado en el Paso 4.4.
