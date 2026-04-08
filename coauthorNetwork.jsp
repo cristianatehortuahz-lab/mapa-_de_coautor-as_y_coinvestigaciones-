@@ -316,7 +316,10 @@
                     for (int pass = 0; pass < 2; pass++) {
                         String xml = (pass == 0) ? xmlI : xmlE;
                         boolean isExternal = (pass == 1);
-                        if (xml.startsWith("<error>")) continue;
+                        if (xml.startsWith("<error>")) {
+                            statusMsg.put((isExternal ? "error_nodesExternal" : "error_nodesInternal"), xml);
+                            continue;
+                        }
 
                         try {
                             JSONArray rows = getResultsArray(XML.toJSONObject(xml));
@@ -367,7 +370,10 @@
 
                     for (int pass = 0; pass < 2; pass++) {
                         String xml = (pass == 0) ? xmlEI : xmlEA;
-                        if (xml.startsWith("<error>")) continue;
+                        if (xml.startsWith("<error>")) {
+                            statusMsg.put((pass == 0 ? "error_edgesInternal" : "error_edgesAll"), xml);
+                            continue;
+                        }
 
                         try {
                             JSONArray rows = getResultsArray(XML.toJSONObject(xml));
