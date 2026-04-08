@@ -1,27 +1,24 @@
+<!-- Cargar estilos unificados del frontend para expandir el Layout VIVO -->
 <style>
-  #wrapper-content,
-  #content,
-  #content-wrapper,
-  #main-content,
-  .contentsBrowse,
-  #pageContent {
-    padding: 0 !important;
-    margin: 0 !important;
-    max-width: 100% !important;
-    width: 100% !important;
-  }
+  /* Forzar al contenedor a romper los limites de la plantilla de VIVO */
   #mapa-coautores-container {
-    width: 100%;
-    height: 85vh; /* Se usa un porcentaje alto para llenar el espacio sin causar doble scrollbar */
-    min-height: 800px;
-    border: none;
-    display: block;
+    width: 100vw !important;
+    height: 90vh !important;
+    max-width: 100vw !important;
+    margin-left: calc(-50vw + 50%); /* Truco para salir del div central */
+    position: relative;
     overflow: hidden;
+    background: #f8f8f8;
+    border: none;
   }
   #mapa-coautores-container iframe {
     width: 100%;
     height: 100%;
     border: none;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
   }
 </style>
 

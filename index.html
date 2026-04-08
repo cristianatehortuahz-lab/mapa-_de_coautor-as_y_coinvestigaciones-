@@ -2,7 +2,22 @@
 <html lang="es" data-theme="light">
 <!--
     ================================================================
-    index.html - Mapa de Coautorias (Versión Prácticas UR)
+    index.html - Mapa de Coautorias
+    Universidad del Rosario - HUB-UR
+    ================================================================
+
+    PROPOSITO:
+    Pagina principal del mapa interactivo de coautorias.
+    Muestra la red de investigadores como un grafo D3.js.
+
+    ARQUITECTURA:
+    - CSS externo:  legend_styles.css (todos los estilos del proyecto)
+    - JS externo:   network_logic.js  (toda la logica D3 y UI)
+    - Fuente:       Google Fonts "Inter" (cargada via CDN)
+
+    CARGA EN VIVO:
+    Este archivo se embebe via <iframe> desde mapaCoautores.ftl
+    para aislar sus estilos del CSS global de VIVO.
     ================================================================
 -->
 
@@ -16,61 +31,104 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Hoja de estilos principal -->
-    <link rel="stylesheet" href="legend_styles.css?v=4.2">
+    <!-- Hoja de estilos principal (contiene TODOS los estilos del proyecto) -->
+    <link rel="stylesheet" href="legend_styles.css?v=3.5">
 </head>
 
 <body style="overflow: hidden;">
-    <div id="coauthor-map-wrapper">
 
+    <!-- ============================================================
+         HEADER - Barra superior con titulo, boton de tema y ayuda
+         ============================================================ -->
     <header id="app-header">
+        <!-- Punto decorativo con gradiente (branding visual) -->
         <div class="logo-dot"></div>
         <h1>Mapa de Coautorias</h1>
         <span class="subtitle">Red de Investigadores - Universidad del Rosario</span>
 
+        <!-- Botones de la esquina superior derecha -->
         <div id="header-right">
-            <!-- TOGGLE DE CAPAS -->
+            <!-- TOGGLE DE CAPAS (Publicaciones vs Proyectos) -->
             <div id="layer-toggle-container" class="layer-toggle">
-                <button class="layer-btn active" data-layer="pubs" title="Ver red de coautorías académicas">&#x1F4DA;
-                    Publicaciones</button>
-                <button class="layer-btn" data-layer="grants" title="Ver red de proyectos de investigación">&#x1F52C;
-                    Proyectos</button>
+                <button class="layer-btn active" data-layer="pubs" title="Ver red de coautorías académicas">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    Publicaciones
+                </button>
+                <button class="layer-btn" data-layer="grants" title="Ver red de proyectos de investigación">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Proyectos
+                </button>
             </div>
+            <!-- Boton para alternar entre tema claro y oscuro -->
             <button id="btn-theme" class="hdr-btn" title="Cambiar tema">&#x1F319;</button>
+            <!-- Boton para abrir el panel de ayuda/informacion -->
             <button id="btn-help" class="hdr-btn" title="Informacion del mapa">?</button>
 
+            <!-- ============================================================
+                 BOTON "VISTA COMPLETA" - Abre el mapa en pestana nueva
+                 sin el header institucional de VIVO
+                 ============================================================ -->
             <a id="btn-fullscreen" href="/mapadeCoauthor/index.html" target="_blank">
+                <!-- Icono SVG de pantalla completa (expand) -->
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
+                    <path
+                        d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
                     </path>
                 </svg>
                 Vista completa
             </a>
 
+            <!-- ============================================================
+                 BOTON "VOLVER A LA RED" - Visible solo en modo ego-network
+                 Permite regresar a la vista general del grafo completo
+                 ============================================================ -->
             <button id="btn-close-detail">&#10005; Volver a la red</button>
         </div>
     </header>
 
+    <!-- ============================================================
+         TOOLTIP - Cuadro flotante que aparece al pasar sobre un nodo
+         ============================================================ -->
     <div id="hover-tooltip"></div>
 
+    <!-- ============================================================
+         BARRA DE FILTRO POR FACULTAD - Panel inferior con botones
+         de colores que permiten filtrar nodos por facultad
+         ============================================================ -->
     <div id="legend-panel">
         <div id="legend-content">
             <span id="legend-title">Filtrar por Facultad:</span>
+            <!-- Boton para quitar el filtro activo (oculto por defecto via CSS) -->
             <button id="legend-reset-btn">&#x2715; Ver todas</button>
         </div>
+        <!-- Boton para colapsar/expandir la barra de filtros -->
         <button id="legend-toggle" aria-label="Ocultar/mostrar filtros">&#x2304; Ocultar</button>
     </div>
 
+    <!-- ============================================================
+         CONTROLES - Panel superior izquierdo con buscador
+         ============================================================ -->
     <div id="controls" class="glass">
+        <!-- Buscador con autocompletado de nombres de investigadores -->
         <div id="search-container">
             <input type="text" id="search-input" placeholder="Buscar investigador..." autocomplete="off">
             <button id="search-btn">&#x21B5;</button>
+            <!-- Lista desplegable de sugerencias (generada por JS) -->
             <div id="search-suggestions"></div>
         </div>
     </div>
 
+
+
+
+
+    <!-- ============================================================
+         SIDEBAR - Panel lateral derecho con perfil del investigador
+         Se abre al hacer clic en un nodo del grafo
+         ============================================================ -->
     <div id="node-sidebar" class="glass">
+        <!-- Cabecera: avatar + nombre + facultad + boton cerrar -->
         <div class="sidebar-header">
             <div id="node-avatar" class="node-avatar">?</div>
             <div class="sidebar-flex">
@@ -80,24 +138,28 @@
             <span id="sidebar-close">&#x2715;</span>
         </div>
 
+        <!-- Estadisticas: total de coautorias y colaboradores -->
         <div class="node-stats">
             <div class="stat-box">
                 <div id="stat-pubs" class="stat-value">&mdash;</div>
-                <div id="label-stat-pubs" class="stat-label">Coautorias</div>
+                <div class="stat-label">Coautorias</div>
             </div>
             <div class="stat-box">
                 <div id="stat-connections" class="stat-value">&mdash;</div>
-                <div id="label-stat-connections" class="stat-label">Coautores</div>
+                <div class="stat-label">Colaboradores</div>
             </div>
         </div>
 
+        <!-- Lista de los colaboradores mas frecuentes -->
         <div>
             <div class="sidebar-section-title">Top colaboradores</div>
             <div id="coauthor-list"></div>
         </div>
 
+        <!-- Boton para entrar al modo ego-network (red personal) -->
         <button id="btn-ego-net">&#x1F50D; Ver red personal</button>
 
+        <!-- Toggle de perfiles externos (solo visible en ego-network) -->
         <div class="switch-container" id="toggle-external-wrapper">
             <span class="toggle-label">Perfiles externos</span>
             <label class="switch">
@@ -107,38 +169,110 @@
         </div>
     </div>
 
+    <!-- ============================================================
+         OVERLAY DE AYUDA - Panel informativo que se abre con "?"
+         Explica como interpretar los elementos visuales del mapa
+         ============================================================ -->
     <div id="info-overlay" class="glass">
         <h4>&#x1F5FA;&#xFE0F; Mapa de Coautorias</h4>
+        <p class="ov-subtitle">Red de Investigadores - Universidad del Rosario</p>
+        <p class="ov-text-custom">Visualizacion interactiva de relaciones de coautoria academica.
+            Cada nodo es un investigador; cada arista, una colaboracion en publicaciones.</p>
         <hr>
+
+        <!-- Seccion: como interpretar los elementos del grafo -->
         <div class="ov-section">&#x1F4D6; Como leer el mapa</div>
         <div class="exp-row">
             <div class="exp-icon">
                 <svg width="32" height="32">
                     <circle cx="16" cy="16" r="14" fill="#38bdf8" opacity="0.9" />
+                    <text x="16" y="20" text-anchor="middle" font-size="10" fill="#0f172a" font-weight="bold">42</text>
                 </svg>
             </div>
             <div class="exp-text"><strong>Tamano del nodo</strong><br>= total de coautorias</div>
         </div>
+        <div class="exp-row">
+            <div class="exp-icon">
+                <svg width="32" height="12">
+                    <line x1="0" y1="6" x2="32" y2="6" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.7" />
+                </svg>
+            </div>
+            <div class="exp-text"><strong>Arista delgada</strong><br>= pocos documentos compartidos</div>
+        </div>
+        <div class="exp-row">
+            <div class="exp-icon">
+                <svg width="32" height="12">
+                    <line x1="0" y1="6" x2="32" y2="6" stroke="#38bdf8" stroke-width="5" stroke-opacity="0.8" />
+                </svg>
+            </div>
+            <div class="exp-text"><strong>Arista gruesa</strong><br>= muchos documentos compartidos</div>
+        </div>
+        <div class="exp-row">
+            <div class="exp-icon">
+                <svg width="32" height="32">
+                    <circle cx="16" cy="16" r="12" fill="#64748b" />
+                </svg>
+            </div>
+            <div class="exp-text"><strong>Nodo gris</strong><br>= perfil externo a la universidad</div>
+        </div>
         <hr>
+
+        <!-- Seccion: controles de interaccion -->
+        <div class="ov-section">&#x1F5B1;&#xFE0F; Controles</div>
+        <div class="exp-row">
+            <div class="exp-icon icon-large">&#x1F446;</div>
+            <div class="exp-text"><strong>Clic en nodo</strong><br>Abre perfil y top colaboradores</div>
+        </div>
+        <div class="exp-row">
+            <div class="exp-icon icon-large">&#x1F50D;</div>
+            <div class="exp-text"><strong>Scroll / pinch</strong><br>Zoom + pan arrastrando</div>
+        </div>
+        <div class="exp-row">
+            <div class="exp-icon icon-large">&#x1F3A8;</div>
+            <div class="exp-text"><strong>Barra inferior</strong><br>Filtra nodos por facultad</div>
+        </div>
+        <div class="exp-row">
+            <div class="exp-icon icon-large">&#x1F50E;</div>
+            <div class="exp-text"><strong>Buscador</strong><br>Busqueda con autocompletado</div>
+        </div>
     </div>
 
+    <!-- ============================================================
+         PANEL DE COAUTORIA - Muestra detalles de la arista al hacer
+         clic en una linea que conecta dos investigadores
+         ============================================================ -->
     <div id="info-panel" class="glass">
         <span id="info-close">&times;</span>
         <h3 id="info-title">Detalle de Coautoria</h3>
         <div id="info-content"></div>
     </div>
 
+    <!-- ============================================================
+         OVERLAY DE CARGA CINEMATICO - Animacion de orbitas que se
+         muestra mientras D3 calcula las posiciones de los nodos.
+         Se oculta automaticamente tras ~7 segundos.
+         ============================================================ -->
     <div id="cinematic-overlay">
         <div class="loading-backdrop"></div>
         <div class="loading-card">
+            <!-- Anillos orbitales animados -->
             <div class="orbit-container">
-                <div class="orbit orbit-1"><div class="orbit-node n1"></div></div>
-                <div class="orbit orbit-2"><div class="orbit-node n2"></div></div>
-                <div class="orbit orbit-3"><div class="orbit-node n3"></div></div>
-                <div class="orbit-center"><div class="orbit-core"></div></div>
+                <div class="orbit orbit-1">
+                    <div class="orbit-node n1"></div>
+                </div>
+                <div class="orbit orbit-2">
+                    <div class="orbit-node n2"></div>
+                </div>
+                <div class="orbit orbit-3">
+                    <div class="orbit-node n3"></div>
+                </div>
+                <div class="orbit-center">
+                    <div class="orbit-core"></div>
+                </div>
             </div>
             <div class="loading-title">Mapa de Coautorias</div>
-            <div class="loading-subtitle">Entorno de Prácticas - UR</div>
+            <div class="loading-subtitle">Universidad del Rosario - Red de Investigadores</div>
+            <!-- Barra de progreso visual -->
             <div class="loading-bar-wrap">
                 <div class="loading-bar-fill" id="loading-bar"></div>
             </div>
@@ -146,16 +280,30 @@
         </div>
     </div>
 
+    <!-- ============================================================
+         MINI-OVERLAY DE RECALCULO - Velo ligero que aparece brevemente
+         al activar/desactivar perfiles externos mientras D3 recalcula
+         posiciones de cientos de nodos
+         ============================================================ -->
     <div id="recalc-overlay">
         <div class="recalc-spinner"></div>
         <div class="recalc-text">Recalculando red…</div>
     </div>
 
+    <!-- ============================================================
+         SVG DEL GRAFO - Lienzo donde D3.js dibuja nodos y aristas.
+         Ocupa toda la ventana (100vw x 100vh via CSS).
+         ============================================================ -->
     <svg id="network-graph"></svg>
-    </div>
 
+    <!-- ============================================================
+         DEPENDENCIAS JAVASCRIPT
+         1. D3.js v7 (libreria de visualizacion de datos)
+         2. network_logic.js (logica propia del mapa de coautorias)
+         ============================================================ -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="network_logic.js?v=4.2" charset="UTF-8"></script>
+    <script src="network_logic.js?v=3.17" charset="UTF-8"></script>
 
 </body>
+
 </html>

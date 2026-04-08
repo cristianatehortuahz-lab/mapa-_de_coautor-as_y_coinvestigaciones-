@@ -458,12 +458,19 @@ function initNetwork(data) {
             .slice(0, 8);
 
         const list = d3.select("#coauthor-list");
+        const sectionTitle = d3.select("#node-sidebar .sidebar-section-title");
         list.selectAll(".coauthor-item").remove();
 
         if (sorted.length === 0) {
-            list.append("div").attr("class", "coauthor-item").style("cursor", "default")
-                .html(`<span class="coauthor-name" style="color: var(--text-muted); font-style: italic;">Sin colaboradores internos</span>`);
+            // ===== NUEVA FILOSOFIA: OCULTAMIENTO TOTAL =====
+            // Si el perfil virtualmente no tiene conexiones en la capa actual,
+            // eliminamos graficamente la seccion completa en vez de mostrar ruido.
+            sectionTitle.style("display", "none");
+            list.style("display", "none");
         } else {
+            sectionTitle.style("display", "block");
+            list.style("display", "block");
+            
             sorted.forEach(entry => {
                 const neighborNode = entry.node;
                 const totalVal = entry.totalJointVal;
@@ -481,6 +488,28 @@ function initNetwork(data) {
 
         // Muestra el sidebar (CSS: display:none → display:flex via .visible)
         d3.select("#node-sidebar").classed("visible", true);
+
+        // Actualiza el botón de acción según el modo actual
+        updateEgoNetButton();
+    }
+
+    /**
+     * updateEgoNetButton — Actualiza el texto y estilo del botón #btn-ego-net
+     * según si estamos en detailedMode o no.
+     * En modo detallado: "⬅ Volver a la red"
+     * En modo general:   "🔍 Ver red personal"
+     */
+    function updateEgoNetButton() {
+        const btn = d3.select("#btn-ego-net");
+        if (detailedMode) {
+            btn.html("&#x2B05; Volver a la red")
+               .style("background", "var(--accent)")
+               .style("color", "#fff");
+        } else {
+            btn.html("&#x1F50D; Ver red personal")
+               .style("background", null)
+               .style("color", null);
+        }
     }
 
     /**
@@ -494,7 +523,13 @@ function initNetwork(data) {
     // Listeners de los botones de cierre del sidebar
     d3.select("#sidebar-close").on("click", closeSidebar);
     d3.select("#btn-ego-net").on("click", () => {
-        if (selectedNodeId) enterDetailedMode(selectedNodeId);
+        if (detailedMode) {
+            // Ya en red personal → salir
+            exitDetailedMode();
+        } else if (selectedNodeId) {
+            // Vista general → entrar a red personal
+            enterDetailedMode(selectedNodeId);
+        }
     });
 
     // =========================================================
@@ -994,6 +1029,27 @@ function initNetwork(data) {
             d3.select("#toggle-external-wrapper").style("display", "none");
         }
 
+        // ===== NUEVA FILOSOFIA: PODA ESTRICTA DE NODOS HUERFANOS =====
+        // Conservar exclusivamente los nodos que participen en al menos una
+        // arista de la vista/capa actual (Fidelidad Absoluta de Datos).
+        const activeNodeIds = new Set();
+        linksData.forEach(l => {
+            const s = typeof l.source === "object" ? l.source.id : l.source;
+            const t = typeof l.target === "object" ? l.target.id : l.target;
+            activeNodeIds.add(s);
+            activeNodeIds.add(t);
+        });
+        
+        // Excepcion UX: En modo red personal, conservamos al menos el nodo
+        // central para que no desaparezca inexplicablemente dejandolo en blanco.
+        if (detailedMode && detailedNodeId) {
+            activeNodeIds.add(detailedNodeId);
+        }
+
+        // Filtramos masivamente la data que va hacia D3
+        nodesData = nodesData.filter(n => activeNodeIds.has(n.id));
+        // ==============================================================
+
         render(nodesData, linksData);
         updateFilterBar(nodesData);
     }
@@ -1022,6 +1078,7 @@ function initNetwork(data) {
         }
 
         d3.select("#toggle-external").property("checked", showExternal);
+        updateEgoNetButton();
         updateGraph();
     }
 
@@ -1033,6 +1090,7 @@ function initNetwork(data) {
         detailedNodeId = null;
         showExternal = false;
         d3.select("#toggle-external").property("checked", false);
+        updateEgoNetButton();
         closeSidebar();
         updateGraph();
     }
@@ -1053,16 +1111,12 @@ function initNetwork(data) {
      * navegar directamente a la red personal de un externo aunque no esté en el grafo general.
      */
     function getAllSearchableNodes() {
-        const internal = allData.nodesInternal || [];
-        const external = allData.nodesAll || [];
-        // Combinamos ambos pools para que el buscador encuentre a cualquiera
-        const combined = [...internal];
-        const internalIds = new Set(internal.map(n => n.id));
-        
-        external.forEach(n => {
-            if (!internalIds.has(n.id)) combined.push(n);
-        });
-        return combined;
+        // ===== NUEVA FILOSOFIA: BUSCADOR CONTEXTUAL =====
+        // Restringimos las opciones del buscador unica y exclusivamente a los 
+        // investigadores que estan siendo renderizados visualmente en este 
+        // preciso instante (capa activa de Pubs/Proyectos).
+        // Si el investigador no esta en la pantalla, no existe en la barra.
+        return currentNodes;
     }
 
     /**
@@ -1346,7 +1400,7 @@ function initNetwork(data) {
 
     // Usamos RUTAS RELATIVAS (./) para que funcione independiente
     // Ruta absoluta confirmada que sí funciona en el servidor de prácticas
-    d3.json("baseData.json")
+    d3.json("/HUBvivo115/js/coauthorNetworkViz/baseData.json")
         .then(function (data) {
             // Caché encontrada: dibuja el mapa al instante
             initNetwork(data);
@@ -1377,15 +1431,10 @@ function initNetwork(data) {
 // Alterna entre tema claro (default) y oscuro
 const themeBtn = document.getElementById("btn-theme");
 if (themeBtn) {
-    // Inicializar emoji segun tema actual
-    const initTheme = document.documentElement.getAttribute("data-theme");
-    themeBtn.textContent = (initTheme === "dark") ? "☀️" : "🌙";
-
     themeBtn.addEventListener("click", () => {
         const html = document.documentElement;
         const isDark = html.getAttribute("data-theme") === "dark";
         html.setAttribute("data-theme", isDark ? "light" : "dark");
-        themeBtn.textContent = isDark ? "🌙" : "☀️";
     });
 }
 
