@@ -155,25 +155,9 @@
      * disparen multiples hilos de recalculo simultaneamente.
      * Solo un rebuild puede estar activo a la vez.
      */
-    static final Object REBUILD_LOCK = new Object();
-    static volatile boolean isBuilding = false;
-
-    /**
-     * launchRebuild - Lanza un hilo Daemon que ejecuta las 4 consultas
-     * SPARQL y genera baseData.json en disco.
-     *
-     * El hilo es Daemon para que muera automaticamente si Tomcat se detiene.
-     * Si ya hay un rebuild en curso, la llamada se ignora silenciosamente.
-     *
-     * @param rdf        Servicio RDF para ejecutar las consultas
-     * @param cachePath  Ruta absoluta donde guardar baseData.json
-     */
-    static void launchRebuild(final RDFService rdf, final String cachePath) {
-        synchronized(REBUILD_LOCK) { if (isBuilding) return; isBuilding = true; }
-
-        Thread t = new Thread(new Runnable() {
-            public void run() {
-                try {
+    static String rebuildCache(final RDFService rdf) {
+        JSONObject finalData = new JSONObject();
+        try {
                     // =========================================================
                     // CONSULTAS SPARQL
                     // =========================================================
@@ -439,62 +423,23 @@
                     finalData.put("edgesInternalGrants", eIG);               // Proyectos UR-UR
                     finalData.put("edgesAllGrants",      edgesAllGrantsMerged); // Todos los proyectos
 
-                    // Escritura UTF-8 para preservar acentos en nombres
-                    Writer fw = new OutputStreamWriter(new FileOutputStream(cachePath), "UTF-8");
-                    fw.write(finalData.toString());
-                    fw.close();
-
                 } catch(Exception e) {
-                    System.err.println("coauthorNetwork rebuild error: " + e.getMessage());
-                } finally {
-                    // Liberar el lock para permitir futuros rebuilds
-                    synchronized(REBUILD_LOCK) { isBuilding = false; }
+                    finalData.put("error_global", e.getMessage());
                 }
-            }
-        });
-
-        t.setDaemon(true); // Muere automaticamente si Tomcat se detiene
-        t.start();
-    }
+                return finalData.toString();
+        }
 %>
 
 <%
     // =================================================================
     // LOGICA DE RESPUESTA HTTP
     // =================================================================
-    // 1. Obtener el servicio RDF de VIVO
-    // 2. Disparar rebuild asincrono (se ignora si ya esta en curso)
-    // 3. Si el cache existe -> servir inmediatamente
-    //    Si no existe       -> retornar JSON con status "building"
+    // Ejecucion sincrona: el script de bash es el que hara la espera y guardado
     // =================================================================
 
     VitroRequest vitroReq = new VitroRequest(request);
     RDFService rdfService = vitroReq.getRDFService();
 
-    // Ruta fisica absoluta donde se guarda el cache
-    String realPath = application.getRealPath("/js/coauthorNetworkViz/") + "baseData.json";
-    File cacheFile = new File(realPath);
-
-    // Disparar reconstruccion asincrona
-    launchRebuild(rdfService, realPath);
-
-    // Respuesta inmediata al navegador
-    if (cacheFile.exists()) {
-        // Cache disponible: servir JSON existente
-        InputStream cacheIn = new FileInputStream(cacheFile);
-        out.print(IOUtils.toString(cacheIn, "UTF-8"));
-        cacheIn.close();
-    } else {
-        // Sin cache: informar que se esta construyendo
-        // El frontend mostrara un overlay de carga y reintentara
-        JSONObject statusMsg = new JSONObject();
-        statusMsg.put("status", "building");
-        statusMsg.put("nodesInternal", new JSONArray());
-        statusMsg.put("nodesAll", new JSONArray());
-        statusMsg.put("edgesInternalPubs", new JSONArray());
-        statusMsg.put("edgesAllPubs", new JSONArray());
-        statusMsg.put("edgesInternalGrants", new JSONArray());
-        statusMsg.put("edgesAllGrants", new JSONArray());
-        out.print(statusMsg.toString());
-    }
+    String jsonOutput = rebuildCache(rdfService);
+    out.print(jsonOutput);
 %>
