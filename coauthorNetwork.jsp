@@ -301,7 +301,7 @@
                         String xml = (pass == 0) ? xmlI : xmlE;
                         boolean isExternal = (pass == 1);
                         if (xml.startsWith("<error>")) {
-                            statusMsg.put((isExternal ? "error_nodesExternal" : "error_nodesInternal"), xml);
+                            finalData.put((isExternal ? "error_nodesExternal" : "error_nodesInternal"), xml);
                             continue;
                         }
 
@@ -355,7 +355,7 @@
                     for (int pass = 0; pass < 2; pass++) {
                         String xml = (pass == 0) ? xmlEI : xmlEA;
                         if (xml.startsWith("<error>")) {
-                            statusMsg.put((pass == 0 ? "error_edgesInternal" : "error_edgesAll"), xml);
+                            finalData.put((pass == 0 ? "error_edgesInternal" : "error_edgesAll"), xml);
                             continue;
                         }
 
@@ -415,7 +415,6 @@
                     // =========================================================
                     // SERIALIZACION FINAL A DISCO
                     // =========================================================
-                    JSONObject finalData = new JSONObject();
                     finalData.put("nodesInternal",      nodesInt);           // Solo investigadores UR
                     finalData.put("nodesAll",            nodesAll);           // UR + externos
                     finalData.put("edgesInternalPubs",   eIP);               // Coautorias UR-UR (pubs)
