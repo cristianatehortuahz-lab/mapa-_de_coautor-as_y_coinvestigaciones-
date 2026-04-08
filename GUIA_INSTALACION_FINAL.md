@@ -1,4 +1,4 @@
-﻿# Guía de Despliegue en Producción: Mapa de Colaboración Interactivo
+# Guía de Despliegue en Producción: Mapa de Colaboración Interactivo
 
 Este documento detalla los pasos definitivos para instalar y configurar el Mapa de Colaboración Interactivo v4.3 (con la red dividida por Publicaciones y Proyectos) en un servidor de Producción VIVO, incluyendo la configuración de la Caché automatizada nocturna y procedimientos de recuperación ante fallos.
 
@@ -44,6 +44,14 @@ Toda la lógica visual gráfica se aloja separada del núcleo de VIVO para no in
 * **Ruta Destino Estricta:**
   `👉 /opt/tomcat/webapps/mapadeCoauthor/`
 
+> **⚠️ Permisos en Producción:**
+> Tras copiar los archivos, es necesario asegurar que Tomcat tenga permisos de lectura sobre la carpeta y su contenido. Ejecuta:
+> ```bash
+> sudo chown -R root:root /opt/tomcat/webapps/mapadeCoauthor/
+> sudo chmod -R 755 /opt/tomcat/webapps/mapadeCoauthor/
+> ```
+> Esto garantiza que todos los archivos del frontend (`index.html`, `network_logic.js`, `legend_styles.css`) sean accesibles públicamente vía HTTP sin restricciones de lectura.
+
 ---
 
 ## 3. Copiar el FTL a la ruta correcta (Envoltorio)
@@ -52,6 +60,14 @@ El encargado debe copiar el archivo FreeMarker maestro que incrustará el mapa d
 * **Ruta Destino Estricta:**
   `👉 /opt/tomcat/webapps/HUBvivo115/templates/freemarker/body/`
 * *(Nota Especializada: Dentro de este FTL existe un `<link>` que invoca dinámicamente al archivo `legend_styles.css` alojado en el frontend, unificando todo el CSS de VIVO y del Mapa en un solo archivo físico sin romper la modularidad, y maneja los estilos en línea que fuerzan la pantalla 100vw para romper el wrapper genérico de VIVO).*
+
+> **⚠️ Permisos en Producción:**
+> El archivo FTL debe tener permisos de lectura para que el motor FreeMarker de VIVO pueda compilarlo. Asegúrate de que el propietario y los permisos sean consistentes con el resto de plantillas del directorio:
+> ```bash
+> sudo chown root:root /opt/tomcat/webapps/HUBvivo115/templates/freemarker/body/coauthorNetworkViz.ftl
+> sudo chmod 644 /opt/tomcat/webapps/HUBvivo115/templates/freemarker/body/coauthorNetworkViz.ftl
+> ```
+> Si los permisos son incorrectos, VIVO ignorará la plantilla silenciosamente y mostrará una página en blanco al acceder a `/coauthorNetwork`.
 
 ---
 
