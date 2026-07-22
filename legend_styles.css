@@ -1,0 +1,1559 @@
+/* ==========================================================
+   MAPA DE COAUTORÍAS  - Hoja de estilos unificada
+   Universidad del Rosario - Red de Investigadores
+   ========================================================== */
+
+/* -- RESET ---------------------------------------------------------- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* ==========================================================
+   THEME VARIABLES (UR Branding)
+   ========================================================== */
+:root {
+    /* LIGHT MODE por defecto (UR Light Grey #F8F8F8) */
+    --bg: #F8F8F8;
+    --bg2: #ffffff;
+    --glass-bg: rgba(255, 255, 255, 0.92);
+    --glass-border: rgba(25, 3, 86, 0.15);
+    --text: #212529;
+    --text-muted: #475569;
+    --text-subtle: #64748b;
+    --accent: #DA0921;
+    --accent-dim: rgba(218, 9, 33, 0.12);
+    --input-bg: rgba(25, 3, 86, 0.05);
+    --input-border: rgba(25, 3, 86, 0.15);
+    --link-stroke: rgba(25, 3, 86, 0.7);
+    --node-label: #190356;
+    --node-shadow: #ffffff;
+    --shadow: 0 4px 16px rgba(25, 3, 86, 0.12);
+}
+
+[data-theme="dark"] {
+    /* DARK MODE (Navy #190356) */
+    --bg: #11023a;
+    --bg2: #190356;
+    --glass-bg: rgba(25, 3, 86, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --text: #f8f8f8;
+    --text-muted: #cbd5e1;
+    --text-subtle: #94a3b8;
+    --accent: #DA0921;
+    --accent-dim: rgba(218, 9, 33, 0.15);
+    --input-bg: rgba(255, 255, 255, 0.08);
+    --input-border: rgba(255, 255, 255, 0.15);
+    --link-stroke: rgba(200, 210, 230, 0.6);
+    --node-label: #f8f8f8;
+    --node-shadow: #11023a;
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* -- BODY BASE (fuente Inter aplicada globalmente) -- */
+body {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
+    /* overflow: hidden removido para no bloquear el scroll en VIVO padre */
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.3s, color 0.3s;
+}
+
+/* -- HEADER (barra superior del mapa) -- */
+#app-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    z-index: 20;
+    gap: 10px;
+    overflow: visible;
+}
+
+.logo-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    flex-shrink: 0;
+}
+
+#app-header h1 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+}
+
+#app-header .subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* -- WRAPPER PRINCIPAL ---------------------------------------------------------- */
+/*
+ * Usamos position:relative para que el mapa se inserte en el flujo normal
+ * de la pagina de VIVO permitiendo hacer scroll natural hacia el footer.
+ * La altura usa calc() para ocupar casi toda la pantalla inicial,
+ * pero fluye con la pagina si el usuario baja con el mouse wheel.
+ */
+#coauthor-map-wrapper {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    position: relative;
+    width: 100%;
+    /* En lugar de calcular una altura estática que deja huecos, 
+       forzamos una altura mínima sustancial para el mapa integrado */
+    min-height: 800px;
+    height: 85vh;
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.3s, color 0.3s;
+    overflow: hidden;
+}
+
+/* El SVG ocupa todo el espacio del wrapper */
+#coauthor-map-wrapper #network-graph {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    transition: background 0.3s;
+}
+
+/* -- GLASS BASE ---------------------------------------------------------- */
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+}
+
+/* -- HEADER BUTTONS (theme / help) ---------------------------------------------------------- */
+.hdr-btn {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-subtle);
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hdr-btn:hover {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.hdr-btn.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+#btn-theme {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    border-radius: 8px;
+}
+
+#btn-help {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 50%;
+}
+
+#header-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+}
+
+/* -- CONTROLS (top-left panel) ---------------------------------------------------------- */
+#controls {
+    position: absolute;
+    top: 68px;
+    /* Was 20px; moved down to clear #app-header */
+    left: 20px;
+    padding: 14px 16px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: clamp(200px, 25vw, 280px);
+}
+
+.switch-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: var(--input-bg);
+    transition: .3s;
+    border-radius: 22px;
+    border: 1px solid var(--input-border);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background: var(--text-subtle);
+    transition: .3s;
+    border-radius: 50%;
+}
+
+input:checked+.slider {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+input:checked+.slider:before {
+    transform: translateX(18px);
+    background: white;
+}
+
+/* -- SEARCH ---------------------------------------------------------- */
+#search-container {
+    position: relative;
+    display: flex;
+    gap: 8px;
+}
+
+#search-input {
+    flex: 1;
+    padding: 8px 12px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#search-input::placeholder {
+    color: var(--text-muted);
+}
+
+#search-input:focus {
+    border-color: var(--accent);
+}
+
+#search-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    transition: opacity 0.2s;
+}
+
+[data-theme="dark"] #search-btn {
+    color: #0f172a;
+}
+
+#search-btn:hover {
+    opacity: 0.85;
+}
+
+#search-suggestions {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    margin-top: 4px;
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+}
+
+.suggestion-item {
+    padding: 9px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text);
+    border-bottom: 1px solid var(--glass-border);
+    transition: background 0.15s;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover,
+.suggestion-item.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+}
+
+/* -- CLOSE DETAIL BUTTON (inside header-right) ---------------------------------------------------------- */
+#btn-close-detail {
+    display: none;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    border-radius: 6px;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(218, 9, 33, 0.2);
+    transition: all 0.2s;
+    margin-left: 8px;
+    align-items: center;
+    gap: 4px;
+}
+
+#btn-close-detail:hover {
+    background: #b80718;
+    transform: scale(1.03);
+}
+
+/* -- NODE PROFILE SIDEBAR ----------------------------------------------------------/* -- NODE PROFILE SIDEBAR ---------------------------------------------------------- */
+#node-sidebar {
+    position: absolute;
+    top: 56px;
+    right: 20px;
+    bottom: 230px;
+    /* Suficiente espacio para no chocar con la leyenda de 3 filas */
+    width: clamp(220px, 22vw, 300px);
+    overflow-y: auto;
+    padding: 14px;
+    z-index: 15;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#node-sidebar.visible {
+    display: flex;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.node-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: #0f172a;
+}
+
+.node-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+    flex: 1;
+}
+
+.node-faculty {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-top: 3px;
+}
+
+.node-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.stat-box {
+    background: var(--input-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 3px;
+}
+
+.sidebar-section-title {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
+}
+
+.coauthor-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+    gap: 8px;
+}
+
+.coauthor-item:hover {
+    background: var(--accent-dim);
+}
+
+.coauthor-name {
+    font-size: 12px;
+    color: var(--text);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.coauthor-count {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-dim);
+    padding: 2px 7px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+#btn-ego-net {
+    width: 100%;
+    padding: 9px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+[data-theme="dark"] #btn-ego-net {
+    color: #0f172a;
+}
+
+#btn-ego-net:hover {
+    opacity: 0.88;
+}
+
+#sidebar-close {
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 16px;
+    transition: color 0.2s;
+}
+
+#sidebar-close:hover {
+    color: #f87171;
+}
+
+/* -- EDGE INFO PANEL ---------------------------------------------------------- */
+#info-panel {
+    position: absolute;
+    bottom: 220px;
+    /* Igual que el sidebar para librar la leyenda completamente */
+    left: 20px;
+    padding: 16px 20px;
+    z-index: 15;
+    display: none;
+    width: clamp(220px, 22vw, 300px);
+    color: var(--text);
+}
+
+#info-panel h3 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: var(--text);
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 8px;
+}
+
+#info-panel p {
+    margin: 6px 0;
+    font-size: 13px;
+    color: var(--text-subtle);
+    line-height: 1.4;
+}
+
+#info-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--text-muted);
+}
+
+#info-close:hover {
+    color: #f87171;
+}
+
+/* -- HOVER TOOLTIP ---------------------------------------------------------- */
+#hover-tooltip {
+    position: absolute;
+    background: rgba(15, 23, 42, 0.96);
+    color: #f1f5f9;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 1000;
+    transition: opacity 0.15s ease;
+    transform: translate(-50%, -100%);
+    margin-top: -10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    white-space: nowrap;
+}
+
+[data-theme="light"] #hover-tooltip {
+    background: rgba(30, 41, 59, 0.95);
+}
+
+/* -- HELP / INFO OVERLAY ---------------------------------------------------------- */
+#info-overlay {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: clamp(220px, 22vw, 300px);
+    padding: 18px 20px;
+    z-index: 30;
+    display: none;
+    color: var(--text-subtle);
+    max-height: calc(100vh - 130px);
+    overflow-y: auto;
+}
+
+#info-overlay.visible {
+    display: block;
+}
+
+#info-overlay h4 {
+    margin: 0 0 3px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+#info-overlay .ov-subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+#info-overlay hr {
+    border: 0;
+    border-top: 1px solid var(--glass-border);
+    margin: 10px 0;
+}
+
+.ov-section {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 8px;
+}
+
+.exp-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.exp-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+}
+
+.exp-icon--emoji {
+    font-size: 17px;
+}
+
+.exp-text {
+    line-height: 1.35;
+    font-size: 12px;
+}
+
+.exp-text strong {
+    color: var(--text);
+}
+
+/* -- HELP OVERLAY DESCRIPTION ---------------------------------------------------------- */
+.ov-description {
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* -- SVG / NETWORK ---------------------------------------------------------- */
+/*
+ * NOTA: El tamaño del SVG lo controla el selector compuesto
+ * #coauthor-map-wrapper #network-graph (linea ~80) con width/height: 100%.
+ * No se necesita una regla adicional aquí  - el selector scoped
+ * tiene mayor especificidad y evita conflictos.
+ * (Regla de 100vw/100vh eliminada para no luchar con el wrapper)
+ */
+
+.node {
+    cursor: pointer;
+    transition: filter 0.2s, opacity 0.3s;
+}
+
+.node:hover {
+    filter: drop-shadow(0 0 10px currentColor);
+}
+
+.node.dimmed {
+    opacity: 0.07;
+}
+
+.link {
+    cursor: pointer;
+    transition: stroke-opacity 0.2s, opacity 0.3s;
+}
+
+.link.dimmed {
+    opacity: 0.04;
+}
+
+.node-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    fill: var(--node-label);
+    pointer-events: none;
+    font-weight: 600;
+}
+
+.node-label-shadow {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    stroke: var(--node-shadow);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+    fill: none;
+    pointer-events: none;
+    font-weight: 600;
+}
+
+.node-pubs-label {
+    font-family: 'Inter', sans-serif;
+    /* fill se asigna dinámicamente por JS usando getContrastTextColor() */
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+    pointer-events: none;
+}
+
+
+
+/* -- SIDEBAR FLEX UTILITY ---------------------------------------------------------- */
+.sidebar-info-col {
+    flex: 1;
+}
+
+/* ==========================================================
+   CINEMATIC LOADING OVERLAY
+   ========================================================== */
+#cinematic-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.8s ease;
+}
+
+#cinematic-overlay.overlay-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#cinematic-overlay.overlay-gone {
+    display: none;
+}
+
+#loading-overlay.gone {
+    display: none;
+}
+
+.loading-backdrop {
+    position: absolute;
+    inset: 0;
+    background: var(--bg);
+    backdrop-filter: blur(0px);
+}
+
+.loading-card {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+/* -- Orbit animation -- */
+.orbit-container {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    margin-bottom: 8px;
+}
+
+.orbit {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.orbit-1 {
+    animation: spin 3s linear infinite;
+}
+
+.orbit-2 {
+    animation: spin 5s linear infinite reverse;
+}
+
+.orbit-3 {
+    animation: spin 8s linear infinite;
+}
+
+.orbit-node {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-top: -5px;
+    box-shadow: 0 0 8px currentColor;
+}
+
+.n1 {
+    background: #38bdf8;
+    color: #38bdf8;
+}
+
+.n2 {
+    background: #a78bfa;
+    color: #a78bfa;
+}
+
+.n3 {
+    background: #DA0921;
+    color: #DA0921;
+}
+
+.orbit-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.orbit-core {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    box-shadow: 0 0 20px #38bdf890, 0 0 40px #818cf840;
+    animation: pulse-core 2s ease-in-out infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes pulse-core {
+
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 20px #38bdf890;
+    }
+
+    50% {
+        transform: scale(1.2);
+        box-shadow: 0 0 35px #38bdf8cc, 0 0 60px #818cf850;
+    }
+}
+
+.loading-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+}
+
+.loading-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.3px;
+}
+
+.loading-bar-wrap {
+    width: 200px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.loading-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #38bdf8, #818cf8, #DA0921);
+    border-radius: 99px;
+    transition: width 0.3s ease;
+}
+
+.loading-bar-fill.bar-full {
+    width: 100%;
+}
+
+.loading-bar-fill.bar-generating {
+    width: 85%;
+    transition: width 120s linear;
+}
+
+.loading-status {
+    font-size: 11px;
+    color: var(--text-subtle);
+    letter-spacing: 0.5px;
+}
+
+/* ==========================================================
+   JS-GENERATED CONTENT  - Clases para HTML dinámico
+   generado por network_logic.js
+   ========================================================== */
+
+/* Tooltip: texto secundario (coautorias count) */
+.tooltip-meta {
+    color: var(--text-subtle);
+}
+
+/* Suggestions: texto secundario (grupo/facultad) */
+.suggestion-group {
+    color: var(--text-muted);
+}
+
+/* Edge info panel: contenido dinámico */
+.edge-label {
+    color: var(--text-subtle);
+}
+
+.edge-name {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.edge-connector {
+    color: var(--text-subtle);
+    margin: 2px 0;
+}
+
+.edge-separator {
+    border: 0;
+    border-top: 1px solid var(--glass-border);
+    margin: 12px 0;
+}
+
+.edge-count {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1.125rem;
+}
+
+/* Mini-loader overlay (toggle externos) */
+.mini-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    background: var(--glass-bg);
+    padding: 20px 40px;
+    border-radius: 12px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    box-shadow: var(--shadow);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 1.125rem;
+    font-weight: 500;
+}
+
+/* -- ERROR STATE ---------------------------------------------------------- */
+.error-message {
+    color: #f87171;
+    text-align: center;
+    padding: 40px;
+    font-size: 16px;
+}
+
+/* ==========================================================
+   LEGEND BAR  - theme-aware
+   ========================================================== */
+#legend-panel {
+    /*
+     * position:absolute (no fixed) para que se quede dentro del
+     * #coauthor-map-wrapper que ya es position:fixed.
+     * Un hijo fixed dentro de un padre fixed actúa como absolute
+     * respecto al viewport, no al padre  - causaría salidas del wrapper.
+     */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--glass-bg, rgba(10, 17, 35, 0.88));
+    backdrop-filter: blur(14px);
+    border-top: 1px solid var(--glass-border, rgba(255, 255, 255, 0.07));
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    z-index: 20;
+    /* Siempre encima del sidebar y info-panel */
+    transition: transform 0.3s ease;
+    min-height: 48px;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#legend-panel.collapsed {
+    transform: translateY(100%);
+}
+
+#legend-content {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1;
+}
+
+#legend-title {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted, #64748b);
+    margin-right: 4px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Faculty pill buttons */
+.legend-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    background: var(--input-bg, rgba(255, 255, 255, 0.06));
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text-subtle, #94a3b8);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.legend-btn:hover {
+    background: var(--accent-dim, rgba(255, 255, 255, 0.1));
+    color: var(--text, #e2e8f0);
+}
+
+.legend-btn.active {
+    border-color: currentColor;
+    color: var(--text, #f1f5f9);
+    background: var(--input-bg, rgba(255, 255, 255, 0.08));
+}
+
+.legend-color-dot {
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Reset button */
+#legend-reset-btn {
+    padding: 4px 11px;
+    border-radius: 20px;
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    background: rgba(248, 113, 113, 0.08);
+    font-size: 12px;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    color: #f87171;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    display: none;
+}
+
+#legend-reset-btn:hover {
+    background: rgba(248, 113, 113, 0.18);
+}
+
+/* -- TOGGLE  - inline inside bar, right edge ---------------------------------------------------------- */
+#legend-toggle {
+    position: absolute;
+    right: 16px;
+    /*
+     * bottom: 100% coloca el boton justo encima del borde superior
+     * de #legend-panel, sin importar cuanto mida el panel.
+     * Antes se usaba top: -28px (hardcoded), que rompia si la
+     * altura del panel cambiaba (p.ej. al wrappear en movil).
+     */
+    bottom: 100%;
+    background: var(--glass-bg, rgba(10, 17, 35, 0.88));
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.07));
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    cursor: pointer;
+    color: var(--text-muted, #64748b);
+    white-space: nowrap;
+    transition: all 0.2s;
+    line-height: 1.5;
+}
+
+#legend-toggle:hover {
+    color: var(--text, #e2e8f0);
+    background: var(--accent-dim, rgba(255, 255, 255, 0.1));
+}
+
+/* ==========================================================
+   VIVO INTEGRATION (estilos para mapaCoautores.ftl)
+   ========================================================== */
+#wrapper-content,
+#content,
+#content-wrapper,
+#main-content,
+.contentsBrowse,
+#pageContent {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/*
+ * #mapa-coautores-container  -  Contenedor del iframe del mapa.
+ */
+#mapa-coautores-container {
+    width: 100%;
+    height: calc(100vh - 55px);
+    overflow: hidden;
+    position: relative;
+}
+
+#mapa-coautores-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
+/* ==========================================================
+   RESPONSIVE DESIGN
+   ========================================================== */
+
+/* -- Tablet (<=1024px) ---------------------------------------------------------- */
+/*
+ * Las reglas de ancho fijo en px (240px, 280px) se eliminaron
+ * porque luchaban con los clamp() ya definidos en la regla base:
+ *   #controls:     clamp(200px, 25vw, 280px)
+ *   #node-sidebar: clamp(220px, 22vw, 300px)
+ * clamp() ya es adaptativo por naturaleza, no necesita overrides
+ * adicionales en media queries para comportamiento tablet.
+ *
+ * @media screen and (max-width: 1024px) {
+ *   #controls { width: 240px; }     <- conflicto con clamp()
+ *   #node-sidebar { width: 280px; } <- conflicto con clamp()
+ * }
+ */
+
+/* -- Mobile (<=768px) ---------------------------------------------------------- */
+@media screen and (max-width: 768px) {
+
+    .hdr-btn {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+
+    /* Panel de Controles: ancho completo */
+    #controls {
+        top: 10px;
+        left: 8px;
+        right: 8px;
+        width: auto;
+        padding: 10px 12px;
+        border-radius: 8px;
+    }
+
+    /* Dropdown de búsqueda: ancho completo */
+    #search-dropdown {
+        top: auto;
+        left: 8px;
+        right: 8px;
+        width: auto;
+    }
+
+    /* Sidebar de Nodo: bottom sheet en movil */
+    #node-sidebar {
+        top: auto;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        width: 100%;
+        max-height: 55vh;
+        border-radius: 16px 16px 0 0;
+        border-top: 1px solid var(--glass-border);
+        border-left: none;
+        transform: translateX(0) translateY(100%);
+        transition: transform 0.3s ease;
+    }
+
+    #node-sidebar.active {
+        transform: translateX(0) translateY(0);
+    }
+
+    /* Panel de ayuda (overlay ?): centrado modal */
+    #info-overlay {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 92vw;
+        max-height: 80vh;
+        right: auto;
+        overflow-y: auto;
+    }
+
+    #info-overlay.visible {
+        transform: translate(-50%, -50%);
+    }
+
+    /* Panel de coautoria (info-panel) */
+    #info-panel {
+        bottom: auto;
+        top: 120px;
+        left: 8px;
+        right: 8px;
+        width: auto;
+    }
+
+    /* Reducir tamaño de fuentes SVG en la red */
+    .node-label,
+    .node-label-shadow {
+        font-size: 8px;
+    }
+}
+
+/* ==========================================================
+   BOTONES FLOTANTES  - Red personal y Leyenda
+   ========================================================== */
+#info-toggle-btn {
+    position: fixed;
+    z-index: 900;
+    border: none;
+    border-radius: 24px;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    transition: background 0.2s, transform 0.15s;
+    width: max-content;
+}
+
+#info-toggle-btn {
+    top: 140px !important;
+    right: 30px !important;
+    background: var(--glass-bg, rgba(255, 255, 255, 0.92)) !important;
+    color: var(--text, #212529) !important;
+    border: 1px solid var(--glass-border, rgba(25, 3, 86, 0.15)) !important;
+    border-radius: 50% !important;
+    /* Hacerlo circular */
+    width: 48px !important;
+    height: 48px !important;
+    padding: 0 !important;
+    font-size: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+#info-toggle-btn:hover {
+    background: #e2e8f0;
+    transform: scale(1.08);
+}
+
+
+
+#btn-close-detail:hover {
+    background: #b80718;
+    transform: scale(1.04);
+}
+
+.sidebar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+/* ==========================================================
+   CLASES UTILITARIAS (extraidas de index.html)
+   ========================================================== */
+/* -- MOVED INLINE STYLES FROM HTML ----------------------------------------------------------? */
+.sidebar-flex {
+    flex: 1;
+}
+
+#toggle-external-wrapper {
+    display: none;
+    justify-content: space-between;
+    margin-top: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.ov-text-custom {
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.icon-large {
+    font-size: 17px;
+}
+
+#network-graph {
+    width: 100%;
+    height: 100%;
+}
+
+.coauthor-map-wrapper {
+    width: 100%;
+    /* Se remueve height duplicado para usar el del ID y evitar conflictos */
+    border: none;
+    overflow: hidden;
+    position: relative;
+}
+
+.coauthor-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    overflow: hidden;
+}
+
+.coauthor-fullscreen-container {
+    text-align: right;
+    padding: 15px 20px;
+    background: transparent;
+}
+
+.coauthor-fullscreen-btn {
+    display: inline-block;
+    background: #DA0921;
+    color: #fff;
+    padding: 10px 20px;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(218, 9, 33, 0.25);
+    transition: background 0.2s;
+}
+
+.coauthor-fullscreen-btn:hover {
+    background: #b9061a;
+}
+
+.toggle-label {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* -- BOTON VISTA COMPLETA (dentro del iframe header) ------- */
+#btn-fullscreen {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 7px 12px;
+    /* Ligeramente mas pequeno para alinearse con los botones del header */
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    border-radius: 6px;
+    z-index: 25;
+    box-shadow: 0 2px 8px rgba(218, 9, 33, 0.2);
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 8px;
+    /* Separacion de los otros botones del header */
+}
+
+#btn-fullscreen:hover {
+    background: #b80718;
+    transform: scale(1.02);
+}
+
+/* -- TOGGLE PERFILES EXTERNOS (sidebar ego-network) -- */
+/* Oculto por defecto, JS lo muestra con display:flex
+   cuando se entra al modo red personal (ego-network)   */
+#toggle-external-wrapper {
+    display: none;
+    justify-content: space-between;
+    margin-top: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+/* -- BOTON RESET FILTRO FACULTAD ---------------------------------------------------------- */
+/* Oculto por defecto, JS lo muestra al filtrar        */
+#legend-reset-btn {
+    display: none;
+}
+
+/* -- UTILIDADES EXTRAIDAS DEL HTML ---------------------------------------------------------- */
+.sidebar-flex {
+    flex: 1;
+}
+
+.ov-text-custom {
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.icon-large {
+    font-size: 17px;
+}
+
+/* SVG principal del grafo - ocupa toda la ventana */
+#network-graph {
+    width: 100vw;
+    height: 100vh;
+}
+
+/* ==========================================================
+   MINI-OVERLAY DE RECALCULO
+   Velo ligero glassmorphism que cubre brevemente el mapa
+   mientras D3 recalcula posiciones al togglear externos.
+   ========================================================== */
+#recalc-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background: rgba(248, 248, 248, 0.65);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+[data-theme="dark"] #recalc-overlay {
+    background: rgba(17, 2, 58, 0.7);
+}
+
+#recalc-overlay.visible {
+    display: flex;
+    opacity: 1;
+}
+
+#recalc-overlay.fade-out {
+    opacity: 0;
+}
+
+/* Spinner CSS puro  -  anillo girando */
+.recalc-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--glass-border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: recalc-spin 0.8s linear infinite;
+}
+
+@keyframes recalc-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.recalc-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.3px;
+}
+/* -- LAYER TOGGLE (Pubs vs Projects) -- */
+.layer-toggle {
+    display: flex;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+    height: 36px;
+}
+
+.layer-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-subtle);
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    padding: 2px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.layer-btn svg {
+    flex-shrink: 0;
+    transition: transform 0.2s;
+}
+
+.layer-btn[data-layer="pubs"] svg { color: #f59e0b; }
+.layer-btn[data-layer="grants"] svg { color: #10b981; }
+
+.layer-btn:hover svg {
+    transform: translateY(-2px);
+}
+
+.layer-btn:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.layer-btn.active {
+    background: var(--bg2);
+    color: var(--accent);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .layer-btn.active {
+    background: rgba(218, 9, 33, 0.15);
+    color: #ff4d4d;
+    box-shadow: 0 0 10px rgba(218, 9, 33, 0.2);
+}
