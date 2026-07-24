@@ -8,6 +8,52 @@ Este repositorio contiene la implementación nativa y modular del **Mapa de Cola
 
 ---
 
+## 🔄 Flujo en tiempo de ejecución
+
+El mapa **no consulta SPARQL cuando el usuario entra**: lee un JSON precalculado.
+Por eso hay dos flujos, uno nocturno y otro en vivo.
+
+### A. Precálculo nocturno (cron, 1:00 AM)
+
+```
+carga_mapa.sh (cron nocturno)
+   │  respalda el baseData.json anterior con marca de tiempo
+   ▼  curl "$URL_JSP"
+coauthorNetwork.jsp (Tomcat, /WEB-INF/custom/coauthorViz/)
+   │  ejecuta 4 consultas SPARQL de forma SÍNCRONA:
+   │  nodos internos · nodos externos · aristas internas · aristas externas
+   │  fusiona los resultados en Java
+   ▼  JSON completo en una sola respuesta HTTP (~30-60 s)
+/opt/tomcat/webapps/HUBvivo115/js/coauthorNetworkViz/baseData.json
+```
+
+### B. Lo que ocurre cuando el usuario entra
+
+```
+Navegador (perfil de investigador)
+   ▼
+coauthorNetworkViz.ftl (Tomcat, webapps/HUBvivo115)
+   │  incrusta la aplicación aislada en un <iframe src="/mapadeCoauthor/">
+   ▼
+index.html + network_logic.js  (webapp /mapadeCoauthor/)
+   │  d3.json("/HUBvivo115/js/coauthorNetworkViz/baseData.json")
+   ▼  lectura de un archivo estático (sin SPARQL, sin esperas)
+Red interactiva D3.js renderizada
+```
+
+**Puntos clave del flujo:**
+
+- El JSON es una **caché en disco**. El costo de las 4 consultas SPARQL se paga
+  una vez por noche, no en cada visita: por eso el mapa abre rápido.
+- Si `baseData.json` falta, el frontend **avisa en pantalla** en lugar de quedarse
+  en blanco (`network_logic.js`, INTENTO 1).
+- El `<iframe>` **encapsula la SPA**: evita que D3.js choque con las dependencias
+  de VIVO.
+- La ruta del JSON está **fijada al contexto `HUBvivo115`**. Si la webapp se
+  despliega con otro nombre, el mapa no encuentra los datos.
+
+---
+
 ## ✨ Características Principales
 
 * **Red Dual Dinámica:** Permite al usuario alternar mediante capas (Toggles) entre la visualización de la **Red de Publicaciones Académicas** y la **Red de Proyectos de Investigación**.
