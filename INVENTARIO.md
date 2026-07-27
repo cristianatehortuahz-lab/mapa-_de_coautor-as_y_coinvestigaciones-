@@ -40,7 +40,8 @@ hace cada uno. Para el flujo completo ver [`README.md`](README.md).
 | [`documentacion/README.md`](documentacion/README.md) | Índice: rutas críticas, esquema de datos, troubleshooting. |
 | [`documentacion/01-architecture/`](documentacion/01-architecture/) | Arquitectura de 3 capas (SPA → JSON → JSP). |
 | [`documentacion/02-structure/`](documentacion/02-structure/) | Estructura de datos del mapa. |
-| [`documentacion/03-deployment/`](documentacion/03-deployment/) | Guía paso a paso + bitácora del despliegue real. |
+| [`documentacion/03-deployment/01-Staging-Deployment-Step-by-Step.md`](documentacion/03-deployment/01-Staging-Deployment-Step-by-Step.md) | Guía genérica de despliegue a prácticas. ⚠️ **Ojo:** aunque vive en este repo, sus ejemplos son mayoritariamente del **widget de CV** (44 menciones) y no del mapa (23). Sirve como procedimiento general de despliegue, no como guía específica de este módulo. |
+| [`documentacion/03-deployment/02-Deploy-Real-y-Lecciones-2026-07-17.md`](documentacion/03-deployment/02-Deploy-Real-y-Lecciones-2026-07-17.md) | Bitácora del despliegue real del mapa (2026-07-17) y lecciones aprendidas. Este sí es específico del mapa. |
 | [`documentacion/04-configuration/`](documentacion/04-configuration/) | Configuración por ambiente (LOCAL/STAGING/PROD). |
 
 ---
